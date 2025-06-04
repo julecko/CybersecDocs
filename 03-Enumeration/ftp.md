@@ -1,6 +1,6 @@
 # FTP/SFTP Enumeration Cheatsheet
 
-Quick reference for enumerating FTP (port 21) and SFTP (port 22) services. Replace `target.com` with the target host, `wordlist.txt` with your wordlist, and adjust ports as needed. Always obtain permission before enumerating.
+Enumerating FTP (port 21) and SFTP (port 22) services.
 
 ## 1. Enumerate FTP Version and Scripts (nmap)
 Gather detailed FTP service information.

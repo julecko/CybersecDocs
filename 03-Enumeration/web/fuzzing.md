@@ -1,6 +1,6 @@
 # Ffuf Command Cheatsheet
 
-Quick reference for fuzzing websites with `ffuf`. Replace `wordlist.txt` with your wordlist and `http://example.com` with the target URL.
+Fuzzing websites with `ffuf`.
 
 ## Directory Fuzzing
 Discover hidden directories.

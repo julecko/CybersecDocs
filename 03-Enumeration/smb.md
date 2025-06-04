@@ -1,4 +1,7 @@
 # SMB Enumeration Cheatsheet
+
+Enumerating SMB (ports 139, 445) services.
+
 ## 1. Enumerate SMB Version and Scripts (nmap)
 Gather detailed SMB service information.
 ```

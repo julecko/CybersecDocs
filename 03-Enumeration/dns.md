@@ -1,6 +1,6 @@
 # DNS Enumeration Cheatsheet
 
-Quick reference for enumerating DNS (ports 53 TCP/UDP) services. Replace `target.com` with the target domain, `wordlist.txt` with your wordlist, and adjust as needed. Always obtain permission before enumerating.
+Enumerating DNS (ports 53 TCP/UDP) services.
 
 ## 1. Enumerate DNS Service and Version (nmap)
 Gather DNS service and version information.
