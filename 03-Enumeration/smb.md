@@ -1,66 +1,95 @@
 # SMB Enumeration Cheatsheet
-
-Quick reference for enumerating SMB services (ports 139, 445) using enumeration-focused commands. Replace `192.168.1.100` with the target host, `wordlist.txt` with your wordlist. Always obtain permission before enumerating.
-
-## 1. Enumerate SMB Shares and Info (nmap)
-Gather detailed SMB information.
-```bash
-nmap -p 139,445 --script smb-enum-shares,smb-os-discovery,smb-enum-users 192.168.1.100
+## 1. Enumerate SMB Version and Scripts (nmap)
+Gather detailed SMB service information.
 ```
-- `--script smb-enum-shares,smb-os-discovery,smb-enum-users`: Enumerates shares, OS details, and users.
-
-## 2. List SMB Shares (smbclient)
-View accessible shares without authentication.
-```bash
-smbclient -L //192.168.1.100 -N
+sudo nmap -sV -sC -p139,445 target.com
 ```
-- `-L`: Lists shares.
-- `-N`: Attempts anonymous access (no credentials).
+- `-sV`: Detects service and version.
+- `-sC`: Runs default scripts (e.g., `smb2-security-mode`, `smb2-time`).
 
-## 3. Connect to SMB Share (smbclient)
-Access a specific SMB share.
-```bash
-smbclient //192.168.1.100/share_name -U user%password
+## 2. Check Anonymous SMB Shares (smbclient)
+Test for null session (anonymous) access to list shares.
 ```
-- `-U user%password`: Specifies username and password.
-- Use `-N` for anonymous if no credentials.
-
-## 4. Enumerate SMB Users and Shares (enum4linux)
-Extract users, shares, and other SMB details.
-```bash
-enum4linux -a 192.168.1.100
+smbclient -N -L //target.com
 ```
-- `-a`: Performs all enumeration tasks (users, shares, groups, etc.).
+- `-N`: No password (null session).
+- `-L`: Lists available shares.
 
-## 5. Brute-Force SMB Credentials (hydra)
-Attempt SMB password brute-forcing.
-```bash
-hydra -L users.txt -P passwords.txt smb://192.168.1.100
+## 3. Enumerate SMB Shares and Permissions (smbmap)
+List shares and check permissions.
 ```
-- `-L users.txt`: Username wordlist.
-- `-P passwords.txt`: Password wordlist.
-
-## 6. Check Null Session (smbclient)
-Test for null session access (anonymous, no password).
-```bash
-smbclient //192.168.1.100/IPC$ -N
+smbmap -H target.com
 ```
-- `IPC$`: Common share for null session testing.
+- `-H`: Specify target host.
+- Use `-r sharename` to browse a specific share's contents.
 
-## 7. Download Files from SMB Share
-Retrieve files from an accessible share.
-```bash
-smbclient //192.168.1.100/share_name -U user%password -c "get filename"
+## 4. Brute-Force SMB Credentials (crackmapexec)
+Attempt SMB password spraying or brute-forcing.
 ```
-- `-c "get filename"`: Downloads the specified file.
+crackmapexec smb target.com -u users.txt -p passwords.txt --local-auth
+```
+- `-u users.txt`: Username wordlist.
+- `-p passwords.txt`: Password wordlist.
+- `--local-auth`: For non-domain joined systems.
 
-## 8. Upload Files to SMB Share
+## 5. Enumerate SMB Directory Listing (smbmap)
+List files in a share (if readable).
+```
+smbmap -H target.com -r sharename
+```
+- `-r sharename`: Browse files in the specified share.
+
+## 6. Download Files from SMB (smbmap)
+Retrieve files from an SMB share.
+```
+smbmap -H target.com --download "sharename\filename"
+```
+- `--download`: Downloads the specified file.
+
+## 7. Upload Files to SMB (smbmap)
 Test write permissions by uploading files.
-```bash
-smbclient //192.168.1.100/share_name -U user%password -c "put localfile"
 ```
-- `-c "put localfile"`: Uploads the specified file.
+smbmap -H target.com --upload localfile "sharename\filename"
+```
+- `--upload`: Uploads the specified file.
+
+## 8. Remote Command Execution (crackmapexec)
+Execute commands on the target with valid credentials.
+```
+crackmapexec smb target.com -u username -p password -x 'whoami' --exec-method smbexec
+```
+- `-x`: Run CMD command.
+- `--exec-method smbexec`: Uses SMB-based execution.
+
+## 9. Enumerate Logged-on Users (crackmapexec)
+List users currently logged on.
+```
+crackmapexec smb target.com -u username -p password --loggedon-users
+```
+- `--loggedon-users`: Enumerates logged-on users.
+
+## 10. Extract SAM Hashes (crackmapexec)
+Dump SAM database hashes with admin privileges.
+```
+crackmapexec smb target.com -u username -p password --sam
+```
+- `--sam`: Dumps SAM hashes for local accounts.
+
+## 11. Pass-the-Hash (crackmapexec)
+Authenticate using NTLM hash instead of password.
+```
+crackmapexec smb target.com -u username -H ntlmhash
+```
+- `-H ntlmhash`: Use NTLM hash for authentication.
+
+## 12. Capture NetNTLM Hashes (responder)
+Set up a fake SMB server to capture hashes.
+```
+sudo responder -I interface
+```
+- `-I interface`: Specify network interface (e.g., eth0).
 
 ## Tips
 - Use SecLists for `users.txt` and `passwords.txt`.
-- Check for misconfigurations like null sessions or guest access.
+- Check for misconfigurations (e.g., null sessions, excessive permissions).
+- Be cautious with brute-forcing to avoid account lockouts.
