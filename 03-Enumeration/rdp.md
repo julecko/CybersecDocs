@@ -14,20 +14,6 @@ nmap -Pn -p3389 target.com
 Test a single password against a list of usernames.
 ```bash
 crowbar -b rdp -s target.com/32 -U users.txt -c 'password123'
-```# RDP Command Cheatsheet
-
-## 1. Enumerate RDP Service (nmap)
-Scan for RDP service on the default port.
-```bash
-nmap -Pn -p3389 target.com
-```
-- `-Pn`: Skips host discovery.
-- `-p3389`: Targets RDP default port (TCP/3389).
-
-## 2. RDP Password Spraying (crowbar)
-Test a single password against a list of usernames.
-```bash
-crowbar -b rdp -s target.com/32 -U users.txt -c 'password123'
 ```
 - `-b rdp`: Targets RDP protocol.
 - `-s target.com/32`: Target IP or range.
